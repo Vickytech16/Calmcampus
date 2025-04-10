@@ -1,0 +1,70 @@
+{
+  "project_info": {
+    "project_number": "436288419399",
+    "project_id": "calmcampus-c7f77",
+    "storage_bucket": "calmcampus-c7f77.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:436288419399:android:ef304f98457f2e8959a362",
+        "android_client_info": {
+          "package_name": "com.example.calmcampus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "436288419399-0388pvi3rph6m7umkallnjgqv0kjgas6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.calmcampus",
+            "certificate_hash": "3404eba64d147c68549e80c7ea8ba7b1474e0ffa"
+          }
+        },
+        {
+          "client_id": "436288419399-16jm4msi9u25g89kmnl6fggk1veo4me4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.calmcampus",
+            "certificate_hash": "48cc04877c7a1bc15cb8cecacc12565574ada4aa"
+          }
+        },
+        {
+          "client_id": "436288419399-hnuf1fmjrac9pf34726bdtk2bk4pj6ro.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.calmcampus",
+            "certificate_hash": "a60d1d964ec78308ac0e528517d88369cc723168"
+          }
+        },
+        {
+          "client_id": "436288419399-vfjircmsm9ecb7rk3t3i98mch33daf6p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvyyrZmvugchaZPM7zIqWJWHWjtEhesx4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "436288419399-2c39cn0srkq776tjlc32agsd8vau9frm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "436288419399-ua452tgsr5pnqju9ivpigd06datnkrk9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.calmcampus"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

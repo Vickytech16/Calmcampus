@@ -1,0 +1,2 @@
+G:/Work/App Development/calmcampus/android/app/.cxx/RelWithDebInfo/4a6xn3y3/armeabi-v7a/CMakeFiles/edit_cache.dir
+G:/Work/App Development/calmcampus/android/app/.cxx/RelWithDebInfo/4a6xn3y3/armeabi-v7a/CMakeFiles/rebuild_cache.dir
