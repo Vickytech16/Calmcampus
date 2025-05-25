@@ -1,22 +1,46 @@
+import 'package:calmcampus/utilities/api_check.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:calmcampus/subScreens/Individual_articles_screen.dart';
 import 'package:calmcampus/Contents/Drawer.dart';
 
-class ArticlesScreen extends StatelessWidget {
+// Replace with your actual base URL
+
+class ArticlesScreen extends StatefulWidget {
   const ArticlesScreen({super.key});
 
-  final List<Article> articles = const [
-    Article(id: "1", category: "Student Wellness", description: "Why mental health matters in college"),
-    Article(id: "2", category: "Mindfulness", description: "How mindfulness boosts academic success"),
-    Article(id: "3", category: "Peer Support", description: "The power of student support groups"),
-    Article(id: "4", category: "Digital Balance", description: "Tips for healthy tech use"),
-  ];
+  @override
+  State<ArticlesScreen> createState() => _ArticlesScreenState();
+}
+
+class _ArticlesScreenState extends State<ArticlesScreen> {
+  late Future<List<Article>> articlesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    articlesFuture = fetchArticles();
+  }
+
+  Future<List<Article>> fetchArticles() async {
+    final response = await http.get(Uri.parse('${baseUrl}articles'));
+
+    print("API Response: ${response.body}"); // ✅ Print to CMD
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Article.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load articles');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Background image layer
+        // Background image
         Positioned.fill(
           child: Image.asset(
             'assets/Misc/background.png',
@@ -32,8 +56,8 @@ class ArticlesScreen extends StatelessWidget {
             toolbarHeight: 100,
             backgroundColor: Colors.transparent,
             leading: Builder(
-           builder: (context) => IconButton(
-                icon: Icon(Icons.menu),
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu),
                 onPressed: () {
                   Scaffold.of(context).openDrawer();
                 },
@@ -63,33 +87,35 @@ class ArticlesScreen extends StatelessWidget {
             ),
             centerTitle: true,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: articles.map((article) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        article.category,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.left,
-                      ),
-                      const SizedBox(height: 10),
-                      GestureDetector(
+          body: FutureBuilder<List<Article>>(
+            future: articlesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text("No articles found."));
+              }
+
+              final articles = snapshot.data!;
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: articles.map((article) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => IndividualArticlesScreen(articleId: article.id),
+                              builder: (context) =>
+                                  IndividualArticlesScreen(articleId: article.id),
                             ),
                           );
                         },
                         child: Container(
-                          width: MediaQuery.of(context).size.width * 0.4,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
@@ -102,7 +128,6 @@ class ArticlesScreen extends StatelessWidget {
                             ],
                           ),
                           child: Column(
-                            mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ClipRRect(
@@ -118,7 +143,6 @@ class ArticlesScreen extends StatelessWidget {
                                 padding: const EdgeInsets.all(12.0),
                                 child: Text(
                                   article.description,
-                                  textAlign: TextAlign.left,
                                   style: const TextStyle(fontSize: 14),
                                 ),
                               ),
@@ -126,11 +150,11 @@ class ArticlesScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -138,14 +162,17 @@ class ArticlesScreen extends StatelessWidget {
   }
 }
 
+// ✅ Article model
 class Article {
   final String id;
-  final String category;
   final String description;
 
-  const Article({
-    required this.id,
-    required this.category,
-    required this.description,
-  });
+  Article({required this.id, required this.description});
+
+  factory Article.fromJson(Map<String, dynamic> json) {
+    return Article(
+      id: json['id'].toString(),
+      description: json['description'] ?? 'No Description',
+    );
+  }
 }

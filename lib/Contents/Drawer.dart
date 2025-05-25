@@ -1,7 +1,12 @@
+import 'package:calmcampus/Contents/Tabs.dart';
+import 'package:calmcampus/subScreens/friend_requests.dart';
+import 'package:calmcampus/subScreens/profile_screen.dart';
+import 'package:calmcampus/subScreens/friends_list_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:calmcampus/main.dart'; // TabScreen is imported here
+import 'package:calmcampus/main.dart';
+
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
@@ -61,7 +66,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   ListTile(
                     leading: Icon(Icons.person),
                     title: Text('My Profile'),
-                    onTap: () => print("My Profile clicked"),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/Profile');
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.trending_up),
@@ -70,7 +77,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TabScreen(initialIndex: 5), // Articles tab
+                          builder: (context) => TabScreen(initialIndex: 5),
                         ),
                       );
                     },
@@ -82,7 +89,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TabScreen(initialIndex: 4), // Events tab
+                          builder: (context) => TabScreen(initialIndex: 4),
                         ),
                       );
                     },
@@ -96,6 +103,32 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       print("Logout clicked");
                     },
                   ),
+                  ListTile(
+  leading: Icon(Icons.group_add),
+  title: Text('Friend Requests'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FriendRequestsScreen(),
+      ),
+    );
+  },
+),
+ListTile(
+  leading: Icon(Icons.group),
+  title: Text('Friends List'),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FriendsListScreen(),
+      ),
+    );
+  },
+),
+
+
                 ],
               ),
             ),

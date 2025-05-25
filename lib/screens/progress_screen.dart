@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:calmcampus/Contents/appbar.dart';
+import 'package:calmcampus/subScreens/streak_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:calmcampus/Contents/Drawer.dart';
@@ -113,40 +115,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ),
         Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            elevation: 0,
-            toolbarHeight: 100,
-            backgroundColor: Colors.transparent,
-            leading: Builder(
-              builder: (context) => IconButton(
-                icon: Icon(Icons.menu),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              ),
-            ),
-            actions: [
-              Icon(Icons.notifications, color: Colors.black),
-              SizedBox(width: 16),
-            ],
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(width: 30, height: 30, child: Image.asset('assets/brain_icon.png')),
-                const SizedBox(width: 8),
-                RichText(
-                  text: const TextSpan(
-                    style: TextStyle(color: Colors.black, fontSize: 28, fontFamily: 'Karma'),
-                    children: [
-                      TextSpan(text: 'C', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: 'alm ', style: TextStyle(fontWeight: FontWeight.normal)),
-                      TextSpan(text: 'C', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: 'ampus', style: TextStyle(fontWeight: FontWeight.normal)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            centerTitle: true,
-          ),
+          appBar: CommonAppBar(),
           drawer: CustomDrawer(),
           body: isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -160,7 +129,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       _buildProgressBar('Social Interactions', progressData['Social_Interaction']!, 0xFF95E7FE),
                       _buildProgressBar('Chat Interactions', progressData['Chat_Interactions']!, 0xFFFCAD5E),
                       const SizedBox(height: 10),
-                      _buildStreakSection(),
+                      _buildStreakSection(context),
                     ],
                   ),
                 ),
@@ -186,35 +155,55 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildStreakSection() {
-    return Column(
-      children: [
-        Center(
-          child: Image.asset(
-            'assets/Misc/Fire_streak.png',
-            width: 125,
-            height: 125,
+Widget _buildStreakSection(BuildContext context) {
+  return Column(
+    children: [
+      Center(
+        child: Image.asset(
+          'assets/Misc/Fire_streak.png',
+          width: 125,
+          height: 125,
+        ),
+      ),
+      const SizedBox(height: 10),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            streakDays.toString(),
+            style: const TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
           ),
+          const SizedBox(width: 10),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Day", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text("Streak", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            '/streak',
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              streakDays.toString(),
-              style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.orange),
-            ),
-            const SizedBox(width: 10),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Day", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text("Streak", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+        child: const Text("Check Streak"),
+      ),
+    ],
+  );
+}
 }

@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:calmcampus/utilities/api_check.dart';
+import 'package:calmcampus/utilities/user_data.dart'; // ✅ Import jwt_token
 
 class MapScreen extends StatefulWidget {
   @override
@@ -23,23 +25,25 @@ class _MapScreenState extends State<MapScreen> {
   String selectedCountry = "";
   bool showMap = false;
 
+  final String senderId = "B2OLqMyq7zVgXyctYwruJVo5cQb2";
+  final String receiverId = "BERQNkOr11R4u0gUNoqpuS21M9f1";
+
   @override
   void initState() {
     super.initState();
     fetchUserCounts();
 
-    // ✅ Show 4 default friends initially
     selectedCountryUsers = [
-      {"name": "John Doe", "country": "Global", "id": "1"},
-      {"name": "Alice Smith", "country": "Global", "id": "2"},
-      {"name": "Bob Johnson", "country": "Global", "id": "3"},
-      {"name": "Emma Brown", "country": "Global", "id": "4"},
+      {"name": "John Doe", "country": "Global", "id": receiverId},
+      {"name": "Alice Smith", "country": "Global", "id": receiverId},
+      {"name": "Bob Johnson", "country": "Global", "id": receiverId},
+      {"name": "Emma Brown", "country": "Global", "id": receiverId},
     ];
   }
 
   Future<void> fetchUserCounts() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/maps/user-density'));
+      final response = await http.get(Uri.parse('${baseUrl}maps/user-density'));
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         Map<String, int> filteredUserCounts = {};
@@ -78,7 +82,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> fetchCountryUsers(String country) async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/maps/country/$country'));
+      final response = await http.get(Uri.parse('${baseUrl}maps/country/$country'));
       if (response.statusCode == 200) {
         var data = json.decode(response.body);
         setState(() {
@@ -91,38 +95,43 @@ class _MapScreenState extends State<MapScreen> {
       }
     } catch (e) {
       print("Error fetching country users: $e");
-
-      // ✅ Default fallback friends list
       setState(() {
         selectedCountry = country;
         selectedCountryUsers = [
-          {"name": "John Doe", "country": country.isNotEmpty ? country : "Global", "id": "1"},
-          {"name": "Alice Smith", "country": country.isNotEmpty ? country : "Global", "id": "2"},
-          {"name": "Bob Johnson", "country": country.isNotEmpty ? country : "Global", "id": "3"},
-          {"name": "Emma Brown", "country": country.isNotEmpty ? country : "Global", "id": "4"},
+          {"name": "John Doe", "country": country, "id": receiverId},
+          {"name": "Alice Smith", "country": country, "id": receiverId},
+          {"name": "Bob Johnson", "country": country, "id": receiverId},
+          {"name": "Emma Brown", "country": country, "id": receiverId},
         ];
         requestSentStatus.clear();
       });
     }
   }
 
-  Future<void> sendFriendRequest(String userId) async {
+  Future<void> sendFriendRequest(String receiverId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/friend-requests/send'),
-        body: jsonEncode({"userId": userId}),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse('${baseUrl}friend-requests/send'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $jwt_token", // ✅ Include JWT token here
+        },
+        body: jsonEncode({
+          "senderId": senderId,
+          "receiverId": receiverId,
+        }),
       );
 
       if (response.statusCode == 200) {
         setState(() {
-          requestSentStatus[userId] = true;
+          requestSentStatus[receiverId] = true;
         });
+        print("✅ Friend request sent.");
       } else {
-        print("Failed to send friend request");
+        print("❌ Failed: ${response.body}");
       }
     } catch (e) {
-      print("Error sending request: $e");
+      print("❌ Error: $e");
     }
   }
 
@@ -164,9 +173,9 @@ class _MapScreenState extends State<MapScreen> {
                     style: TextStyle(color: Colors.black, fontSize: 28, fontFamily: 'Karma'),
                     children: [
                       TextSpan(text: 'C', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: 'alm ', style: TextStyle(fontWeight: FontWeight.normal)),
+                      TextSpan(text: 'alm '),
                       TextSpan(text: 'C', style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: 'ampus', style: TextStyle(fontWeight: FontWeight.normal)),
+                      TextSpan(text: 'ampus'),
                     ],
                   ),
                 ),
@@ -187,10 +196,10 @@ class _MapScreenState extends State<MapScreen> {
                             setState(() {
                               selectedCountry = "";
                               selectedCountryUsers = [
-                                {"name": "John Doe", "country": "Global", "id": "1"},
-                                {"name": "Alice Smith", "country": "Global", "id": "2"},
-                                {"name": "Bob Johnson", "country": "Global", "id": "3"},
-                                {"name": "Emma Brown", "country": "Global", "id": "4"},
+                                {"name": "John Doe", "country": "Global", "id": receiverId},
+                                {"name": "Alice Smith", "country": "Global", "id": receiverId},
+                                {"name": "Bob Johnson", "country": "Global", "id": receiverId},
+                                {"name": "Emma Brown", "country": "Global", "id": receiverId},
                               ];
                             });
                           },
@@ -252,8 +261,7 @@ class _MapScreenState extends State<MapScreen> {
                           itemCount: selectedCountryUsers.length,
                           itemBuilder: (context, index) {
                             final user = selectedCountryUsers[index];
-                            final userId = user["id"]!;
-                            final isRequestSent = requestSentStatus[userId] ?? false;
+                            final isRequestSent = requestSentStatus[receiverId] ?? false;
 
                             return ListTile(
                               leading: CircleAvatar(
@@ -263,9 +271,16 @@ class _MapScreenState extends State<MapScreen> {
                               title: Text(user["name"]!),
                               subtitle: Text(user["country"]!),
                               trailing: ElevatedButton(
-                                onPressed:
-                                    isRequestSent ? null : () => sendFriendRequest(userId),
-                                child: Text(isRequestSent ? "Request Sent!" : "Request"),
+                                onPressed: isRequestSent
+                                    ? null
+                                    : () => sendFriendRequest(receiverId),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isRequestSent
+                                      ? Colors.grey
+                                      : Color.fromRGBO(255, 160, 122, 1),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(isRequestSent ? "Requested" : "Request"),
                               ),
                             );
                           },
