@@ -2,6 +2,8 @@ import 'package:calmcampus/Contents/Tabs.dart';
 import 'package:calmcampus/subScreens/friend_requests.dart';
 import 'package:calmcampus/subScreens/profile_screen.dart';
 import 'package:calmcampus/subScreens/friends_list_screen.dart';
+import 'package:calmcampus/utilities/logout_user.dart';
+import 'package:calmcampus/utilities/user_data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -41,7 +43,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Vicky',
+                        '$userNameGlobal',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 18,
@@ -49,7 +51,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ),
                       ),
                       Text(
-                        'vickytech16@gmail.com',
+                        '$userEmailGlobal',
                         style: TextStyle(
                           color: Colors.black54,
                           fontSize: 14,
@@ -82,25 +84,23 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       );
                     },
                   ),
-                  ListTile(
-                    leading: Icon(Icons.event),
-                    title: Text('Upcoming Events'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TabScreen(initialIndex: 4),
-                        ),
-                      );
-                    },
-                  ),
+                  // ListTile(
+                  //   leading: Icon(Icons.event),
+                  //   title: Text('Upcoming Events'),
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => TabScreen(initialIndex: 4),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   ListTile(
                     leading: Icon(Icons.logout),
                     title: Text('Logout'),
                     onTap: () async {
-                      await GoogleSignIn().signOut();
-                      await FirebaseAuth.instance.signOut();
-                      print("Logout clicked");
+                      logoutUser(context);
                     },
                   ),
                   ListTile(

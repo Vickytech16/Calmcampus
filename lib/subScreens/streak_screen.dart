@@ -1,18 +1,82 @@
+import 'package:calmcampus/utilities/user_data.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:calmcampus/Contents/Drawer.dart';
 import 'package:calmcampus/Contents/appbar.dart';
+import 'package:calmcampus/utilities/api_check.dart';
 
-class StreakScreen extends StatelessWidget {
+class StreakScreen extends StatefulWidget {
   const StreakScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final streakDates = List.generate(5, (i) => DateTime(today.year, today.month, today.day - i))
-        .map((d) => DateTime(d.year, d.month, d.day))
-        .toSet();
+  State<StreakScreen> createState() => _StreakScreenState();
+}
 
+class _StreakScreenState extends State<StreakScreen> {
+  Set<DateTime> streakDates = {};
+  final today = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    updateStreak();
+  }
+
+  Future<void> updateStreak() async {
+    try {
+      // 1. Track streak
+      print('Calling POST: ${baseUrl}streaks/track');
+      final trackResponse = await http.post(
+        Uri.parse('${baseUrl}streaks/track'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwt_token',
+        },
+        body: jsonEncode({'userId': userIdGlobal}),
+      );
+
+      if (trackResponse.statusCode != 200) {
+        print('Failed to track streak: ${trackResponse.body}');
+        return;
+      }
+
+      // 2. Fetch streaks
+      final streaksResponse = await http.get(
+        Uri.parse('${baseUrl}streaks?userId=$userIdGlobal'),
+        headers: {
+          'Authorization': 'Bearer $jwt_token',
+        },
+      );
+
+      if (streaksResponse.statusCode == 200) {
+        final data = jsonDecode(streaksResponse.body);
+        print(streaksResponse.body);
+
+        if (data is Map<String, dynamic> && data.containsKey('streakDates')) {
+          final List<dynamic> dates = data['streakDates'];
+          final Set<DateTime> parsedDates = dates
+              .map((d) => DateTime.parse(d).toLocal())
+              .map((d) => DateTime(d.year, d.month, d.day))
+              .toSet();
+          setState(() {
+            streakDates = parsedDates;
+          });
+        } else {
+          print('Unexpected streak format: $data');
+        }
+      } else {
+        print('Error fetching streak: ${streaksResponse.body}');
+      }
+    } catch (e) {
+      print('Exception fetching streak: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         Positioned.fill(
@@ -71,17 +135,13 @@ class StreakScreen extends StatelessWidget {
                 defaultTextStyle: const TextStyle(color: Colors.black),
                 weekendTextStyle: const TextStyle(color: Colors.black),
                 outsideTextStyle: const TextStyle(color: Colors.grey),
-                todayDecoration: BoxDecoration(
+                todayDecoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.orange,
                 ),
                 markerDecoration: const BoxDecoration(
                   color: Colors.orange,
                   shape: BoxShape.circle,
-                ),
-                selectedDecoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.orange.shade700,
                 ),
               ),
               calendarBuilders: CalendarBuilders(

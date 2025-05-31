@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-    final baseUrl = Uri.parse('https://619e-2401-4900-2304-788f-99e4-f969-5bd1-f1e3.ngrok-free.app/');
-    String chatUrl = "https://619e-2401-4900-2304-788f-99e4-f969-5bd1-f1e3.ngrok-free.app/";
+    final baseUrl = Uri.parse('https://aaf6-2401-4900-234f-839a-8c86-af76-b683-6239.ngrok-free.app/');
+    String chatUrl = "https://aaf6-2401-4900-234f-839a-8c86-af76-b683-6239.ngrok-free.app/";
 
 
 class ApiCheck extends StatefulWidget {

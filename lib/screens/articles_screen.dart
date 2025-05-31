@@ -1,11 +1,11 @@
-import 'package:calmcampus/utilities/api_check.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:calmcampus/subScreens/Individual_articles_screen.dart';
-import 'package:calmcampus/Contents/Drawer.dart';
+import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
-// Replace with your actual base URL
+import 'package:calmcampus/Contents/Drawer.dart';
+import 'package:calmcampus/utilities/api_check.dart';
+import 'package:calmcampus/utilities/user_data.dart';
 
 class ArticlesScreen extends StatefulWidget {
   const ArticlesScreen({super.key});
@@ -24,9 +24,15 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
   }
 
   Future<List<Article>> fetchArticles() async {
-    final response = await http.get(Uri.parse('${baseUrl}articles'));
+    final response = await http.get(
+      Uri.parse('${baseUrl}articles'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $jwt_token',
+      },
+    );
 
-    print("API Response: ${response.body}"); // ✅ Print to CMD
+    print("API Response: ${response.body}");
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -36,11 +42,45 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
     }
   }
 
+  Future<void> markArticleAsRead(String articleId) async {
+
+    print("🔔 markArticleAsRead() called with ID: $articleId"); // <- Add this
+ final response = await http.post(
+
+  Uri.parse("${baseUrl}articles/$articleId/mark-as-read"),
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $jwt_token',
+  },
+  body: json.encode({}), // 👈 try sending an empty object
+);
+
+
+  if (response.statusCode != 200) {
+    print("Failed to mark as read: ${response.body}");
+    print("ARTICLEID _>>>>>>>>>>>>>>>>>>>>>>>>> $articleId");
+  } else {
+    print("Article $articleId marked as read");
+  }
+}
+
+
+Future<void> _launchURL(String url, String articleId) async {
+
+  print("🔗 Launching URL: $url for article ID: $articleId"); // <- Add this
+  await markArticleAsRead(articleId);
+  
+
+  if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    throw 'Could not launch $url';
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Background image
         Positioned.fill(
           child: Image.asset(
             'assets/Misc/background.png',
@@ -106,15 +146,7 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  IndividualArticlesScreen(articleId: article.id),
-                            ),
-                          );
-                        },
+                        onTap: () => _launchURL(article.sourceUrl, article.id),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -132,18 +164,31 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
                             children: [
                               ClipRRect(
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                                child: Image.asset(
-                                  'assets/Misc/articles_default.png',
-                                  height: 100,
+                                child: Image.network(
+                                  article.imageUrl,
+                                  height: 150,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Image.asset('assets/Misc/articles_default.png',
+                                          height: 150, fit: BoxFit.cover),
                                 ),
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(12.0),
-                                child: Text(
-                                  article.description,
-                                  style: const TextStyle(fontSize: 14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      article.title,
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Category: ${article.category}',
+                                      style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -162,17 +207,30 @@ class _ArticlesScreenState extends State<ArticlesScreen> {
   }
 }
 
-// ✅ Article model
+// ✅ Updated Article model
 class Article {
   final String id;
-  final String description;
+  final String title;
+  final String category;
+  final String imageUrl;
+  final String sourceUrl;
 
-  Article({required this.id, required this.description});
+  Article({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.imageUrl,
+    required this.sourceUrl,
+  });
 
   factory Article.fromJson(Map<String, dynamic> json) {
+    final contents = json['contents'] ?? [];
     return Article(
       id: json['id'].toString(),
-      description: json['description'] ?? 'No Description',
+      title: json['title'] ?? 'Untitled',
+      category: contents.isNotEmpty ? contents[0]['category'] ?? 'Unknown' : 'Unknown',
+      imageUrl: json['image_url'] ?? '',
+      sourceUrl: contents.isNotEmpty ? contents[0]['source_url'] ?? '' : '',
     );
   }
 }

@@ -23,14 +23,14 @@ class _TabScreenState extends State<TabScreen> {
     ProgressScreen(),
     ChatScreen(),
     MapScreen(),
-    EventsScreen(),
+    // EventsScreen(),
     ArticlesScreen(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+      _currentIndex = widget.initialIndex.clamp(0, _screens.length - 1);
   }
 
   @override
@@ -56,7 +56,7 @@ class _TabScreenState extends State<TabScreen> {
           color: const Color(0xFFCBC4B6).withOpacity(0.95),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(6, (index) {
+            children: List.generate(5, (index) {
               return _buildNavItem(
                 iconSelected: _getSelectedIcon(index),
                 iconUnselected: _getUnselectedIcon(index),
@@ -140,9 +140,9 @@ String _getSelectedIcon(int index) {
       return 'assets/Icons/contacts_brown.png';
     case 3:
       return 'assets/Icons/map_brown.png';
+    // case 4:
+    //   return 'assets/Icons/events_brown.png';
     case 4:
-      return 'assets/Icons/events_brown.png';
-    case 5:
       return 'assets/Icons/articles_brown.png';
     default:
       return 'assets/Icons/articles_brown.png';
@@ -159,9 +159,9 @@ String _getUnselectedIcon(int index) {
       return 'assets/Icons/contacts_white.png';
     case 3:
       return 'assets/Icons/map_white.png';
+    // case 4:
+    //   return 'assets/Icons/events_white.png';
     case 4:
-      return 'assets/Icons/events_white.png';
-    case 5:
       return 'assets/Icons/articles_white.png';
     default:
       return 'assets/Icons/articles_white.png';
@@ -178,9 +178,9 @@ String _getLabel(int index) {
       return "Chat";
     case 3:
       return "Map";
+    // case 4:
+    //   return "Events";
     case 4:
-      return "Events";
-    case 5:
       return "Articles";
     default:
       return "";
